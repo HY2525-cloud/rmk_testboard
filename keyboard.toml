@@ -1,35 +1,106 @@
-# Documentation: https://rmk.rs/docs/configuration.html
 [keyboard]
-name = "RMK Keyboard"
-product_name = "RMK Keyboard"
+name = "RMK_test"		# Keyboard name
+product_name = "RMK_test"	# Display name of this keyboard
 vendor_id = 0x4c4b
 product_id = 0x4643
 manufacturer = "RMK"
-chip = "rp2040"
+# The chip or existing board used in keyboard
+# Either "board" or "chip" can be set, but not both
+chip = "nrf52840"
+# USB is enabled by default for most chips
+# Set to false if you don't want USB
+usb_enable = true
 
+
+# Set matrix IO for the board. This section is for non-split keyboards and is in conflict with the [split] section
 [matrix]
-# Row and col pins are mandatory
-row_pins = ["PIN_6", "PIN_7", "PIN_8", "PIN_9"]
-col_pins = ["PIN_19", "PIN_20", "PIN_21"]
+
+# Direct Pin Matrix is a Matrix of buttons connected directly to pins. It conflicts with the above.
+
+# `matrix_type` is optional. Default is "normal"
+matrix_type = "direct_pin"
+# matrix_type = "normal"
+
+# Input and output pins
+# row_pins = ["PIN_6", "PIN_7", "PIN_8", "PIN_9"]
+# col_pins = ["PIN_19", "PIN_20", "PIN_21"]
 
 # RMK uses col2row as the default matrix diode direction, if you want to use a row2col matrix, add `row2col = true`
-# row2col = true
+# row2col = false
 
-[layout]
-rows = 4
-cols = 3
-layers = 2
-keymap = [
-    [
-        ["A", "B", "C"],
-        ["Kc1", "Kc2", "Kc3"],
-        ["LCtrl", "MO(1)", "LShift"],
-        ["OSL(1)", "LT(2, Kc9)", "LM(1, LShift | LGui)"]
-    ],
-    [
-        ["_", "TT(1)", "TG(2)"],
-        ["_", "_", "_"],
-        ["_", "_", "_"],
-        ["_", "_", "_"]
-    ],
+# Direct Pin Matrix is a Matrix of buttons connected directly to pins. It conflicts with the above.
+# GPIOのPIN名はマイクロコントローラによって異なります。サポートされている各チップシリーズの正しいフォーマットを以下に示します。
+# nRF52nRF52:P0_00,P0_01,P1_15など
+
+#[cfg(feature = "nfc-pins-as-gpio")]
+#    P0_09,
+#[cfg(feature = "nfc-pins-as-gpio")]
+#    P0_10,
+#[cfg(feature="reset-pin-as-gpio")]
+#    P0_18,
+
+direct_pins = [
+    ["P0_10","P0_25"],
+    ["P0_24","P0_15"]
 ]
+
+# `direct_pin_low_active` is optional. Default is `true`.
+# If your pin needs to be pulled up and the pin is pulled down when the button is turned on, please set it to true
+# WARNING: If you use a normal matrix, it will be ineffective
+# Pin behavior (default: true = active low with pull-up)
+direct_pin_low_active = true
+
+
+# Layout info for the keyboard, this section is mandatory
+[layout]
+
+rows = 2
+cols = 2
+layers = 1
+matrix_map = """
+      (0,0)  (0,1)
+      (1,0)  (1,1)
+"""
+#The number and order of entries on each defined layer must be identical with the number and order of entries in matrix_map.
+# White spaces and line breaks are free to vary, but it's worth keeping a consistent arrangement with the real keyboard.
+# layer 0 (default):
+[[layer]]
+name = "base_layer" #optional name for the layer
+keys = """
+A Kc1
+Kp1 LShift
+"""
+
+
+[ble]
+enabled = true
+# vddh has an internal voltage divider
+# battery_adc_pin = "vddh"
+# Or
+# battery_adc_pin = "P0_04"
+# adc_divider_measured = 2000
+# adc_divider_total = 2806
+
+# charge_state.pin = "P0_25"
+# charge_state.low_active = false
+# charge_led.pin = "P0_29"
+# charge_led.low_active = false
+
+#公式が間違ってる？
+#use_2m_phy = true
+
+[storage]
+# Enable/disable storage feature (default: true)
+enabled = true
+# Clear all storage data on boot, including keymap, BLE bonds, etc
+clear_storage = true
+
+[chip.nrf52840]
+# DCDC regulator 0 enabled (nrf52840 only, default: true)
+# **Note**: Do not enable DC/DC regulator without an external LC filter being connected
+# as this will inhibit device operation, including debug access, until an LC filter is connected.
+dcdc_reg0 = false
+# DCDC regulator 1 enabled (nrf52840, nrf52833, default: true)
+# **Note**: Do not enable DC/DC regulator without an external LC filter being connected
+# as this will inhibit device operation, including debug access, until an LC filter is connected.
+dcdc_reg1 = false
